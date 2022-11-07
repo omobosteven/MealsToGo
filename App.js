@@ -5,55 +5,25 @@ import {
 import { useFonts as useLato, Lato_400Regular } from "@expo-google-fonts/lato";
 
 import React from "react";
-import { Text } from "react-native";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { RestaurantsScreen } from "./src/features/restaurants/screens/restaurants.screen";
 import { ThemeProvider } from "@emotion/react";
 import { theme } from "./src/infrastructure/theme";
-import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { SafeArea } from "./src/components/utitlity/safe-area.component";
-import { Ionicons } from "@expo/vector-icons";
-import { RestaurantsContextProvider } from "./src/services/restaurants/restaurants.context";
-import { LocationContextProvider } from "./src/services/location/location.context";
+import { AuthenticationContextProvider } from "./src/services/authentication/authentication.context";
+import { Navigation } from "./src/infrastructure/navigation";
 
-const Tab = createBottomTabNavigator();
-
-const TAB_ICON = {
-	Restaurants: "md-restaurant",
-	Map: "md-map",
-	Settings: "md-settings",
+const firebaseConfig = {
+	apiKey: "AIzaSyBj3_b0f9QJ5Ed1dv2j2_2BBG7Eu6HoVZg",
+	authDomain: "mealstogo-5c857.firebaseapp.com",
+	projectId: "mealstogo-5c857",
+	storageBucket: "mealstogo-5c857.appspot.com",
+	messagingSenderId: "779318789262",
+	appId: "1:779318789262:web:6651eb5ed09f1a602b75df",
 };
 
-const Settings = () => (
-	<SafeArea>
-		<Text>Settings</Text>
-	</SafeArea>
-);
-
-const Map = () => (
-	<SafeArea>
-		<Text>Map</Text>
-	</SafeArea>
-);
-
-const createScreenOptions = ({ route }) => {
-	const iconName = TAB_ICON[route.name];
-
-	return {
-		tabBarIcon: ({ size, color }) => (
-			<Ionicons name={iconName} size={size} color={color} />
-		),
-		tabBarActiveTintColor: "tomato",
-		tabBarInactiveTintColor: "gray",
-		// tabBarStyle: [
-		// 	{
-		// 		display: "flex"
-		// 	},
-		// 	null
-		// ]
-	};
-};
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 
 export default function App() {
 	const [oswaldLoaded] = useOswald({
@@ -71,17 +41,9 @@ export default function App() {
 	return (
 		<>
 			<ThemeProvider theme={theme}>
-				<LocationContextProvider>
-					<RestaurantsContextProvider>
-						<NavigationContainer>
-							<Tab.Navigator screenOptions={createScreenOptions}>
-								<Tab.Screen name="Restaurants" component={RestaurantsScreen} />
-								<Tab.Screen name="Map" component={Map} />
-								<Tab.Screen name="Settings" component={Settings} />
-							</Tab.Navigator>
-						</NavigationContainer>
-					</RestaurantsContextProvider>
-				</LocationContextProvider>
+				<AuthenticationContextProvider>
+					<Navigation />
+				</AuthenticationContextProvider>
 			</ThemeProvider>
 			<ExpoStatusBar style="auto" />
 		</>

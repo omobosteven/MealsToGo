@@ -1,22 +1,18 @@
-import React, { useContext } from "react";
-import { useTheme } from "@emotion/react";
+import React, { useContext, useState } from "react";
 import styled from "@emotion/native";
-import { View, FlatList } from "react-native";
+import { View, FlatList, TouchableOpacity } from "react-native";
 import { ActivityIndicator, Colors } from "react-native-paper";
 import { Search } from "../components/search.component";
 import { RestaurantInfoCard } from "../components/restaurant-info-card.component";
-import { SafeArea } from "../../../components/utitlity/safe-area.component";
+import { SafeArea } from "../../../components/utility/safe-area.component";
 
 import { Spacer } from "../../../components/spacer/spacer.component";
+import { FavouritesBar } from "../../../components/favourites/favourites-bar.component";
 
 import { RestaurantsContext } from "../../../services/restaurants/restaurants.context";
+import { FavouritesContext } from "../../../services/favourites/favourites.context";
 
-const withAttrs = (Component, fn) => (props) => {
-	const theme = useTheme();
-	const attrs = fn({ theme, props });
-
-	return <Component {...props} {...attrs} />;
-};
+import { withAttrs } from "../../../utilities/withAttrs";
 
 const RestaurantList = withAttrs(styled(FlatList)``, ({ props, theme }) => ({
 	contentContainerStyle: {
@@ -33,8 +29,10 @@ const LoadingContainer = styled(View)`
 	left: 50%;
 `;
 
-export const RestaurantsScreen = () => {
+export const RestaurantsScreen = ({ navigation }) => {
+	const [isToggled, setIsToggled] = useState(false);
 	const { isLoading, restaurants } = useContext(RestaurantsContext);
+	const { favourites } = useContext(FavouritesContext);
 
 	return (
 		<SafeArea>
@@ -43,13 +41,28 @@ export const RestaurantsScreen = () => {
 					<Loading size={50} animating={true} color={Colors.blue300} />
 				</LoadingContainer>
 			)}
-			<Search />
+			<Search
+				isFavouritesToggled={isToggled}
+				onFavouritesToggle={() => setIsToggled(!isToggled)}
+			/>
+			{isToggled && (
+				<FavouritesBar
+					favourites={favourites}
+					onNavigate={navigation.navigate}
+				/>
+			)}
 			<RestaurantList
 				data={restaurants}
 				renderItem={({ item }) => (
-					<Spacer position="bottom" size="large">
-						<RestaurantInfoCard restaurant={item} />
-					</Spacer>
+					<TouchableOpacity
+						onPress={() =>
+							navigation.navigate("RestaurantDetail", { restaurant: item })
+						}
+					>
+						<Spacer position="bottom" size="large">
+							<RestaurantInfoCard restaurant={item} />
+						</Spacer>
+					</TouchableOpacity>
 				)}
 				keyExtractor={(item) => item.name}
 			/>
